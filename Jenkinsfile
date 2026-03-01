@@ -2,7 +2,7 @@ pipeline {
     agent {
         docker {
             image 'mcr.microsoft.com/playwright/python:v1.40.0-jammy'
-            // Keep the workspace active for the post-processing
+            // This ensures the container stays up long enough for the post steps
             reuseNode true 
         }
     }
@@ -20,6 +20,7 @@ pipeline {
         }
     }
 
+    // Move the post block here, inside the pipeline
     post {
         always {
             // Because we are using 'agent' at the top level, 
