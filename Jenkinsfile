@@ -10,7 +10,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 // Install your python libraries
-                sh 'pip install -r requirements.txt'
+                sh 'python3 -m pip install -r requirements.txt'
             }
         }
 
@@ -18,7 +18,7 @@ pipeline {
             steps {
                 // Run tests and generate a JUnit XML report for Jenkins to read
                 // We don't use --headed because Jenkins servers don't have a screen
-                sh 'pytest --junitxml=results.xml'
+                sh 'python3 -m pytest --junitxml=results.xml'
             }
         }
     }
