@@ -1,35 +1,28 @@
 pipeline {
     agent {
         docker {
-            // Use the official Playwright image (includes Python and all Browsers)
             image 'mcr.microsoft.com/playwright/python:v1.40.0-jammy'
+            // This ensures the container stays up long enough for the post steps
+            reuseNode true 
         }
     }
 
     stages {
-        stage('Install Dependencies') {
+        stage('Install and Run') {
             steps {
-                // Install your python libraries
-                sh 'python3 -m pip install -r requirements.txt'
-            }
-        }
-
-        stage('Run UI Tests') {
-            steps {
-                // Run tests and generate a JUnit XML report for Jenkins to read
-                // We don't use --headed because Jenkins servers don't have a screen
-                sh 'python3 -m pytest --junitxml=results.xml'
+                sh 'pip install -r requirements.txt'
+                // Use || true to ensure the pipeline doesn't stop before the post block
+                sh 'pytest --junitxml=results.xml || true' 
             }
         }
     }
 
+    // Move the post block here, inside the pipeline
     post {
         always {
-            // 1. Process the test results to show graphs in Jenkins
+            // Jenkins will now look in the workspace for these files
             junit 'results.xml'
-            
-            // 2. Archive screenshots or videos if the 'test-results' folder exists
-            archiveArtifacts artifacts: 'test-results/**/*.png, test-results/**/*.mp4', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'test-results/**', allowEmptyArchive: true
         }
     }
 }
