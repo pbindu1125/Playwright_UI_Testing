@@ -8,11 +8,14 @@ pipeline {
     }
 
     stages {
-        stage('Install and Run') {
+        stage('Run Tests') {
             steps {
-                sh 'pip install -r requirements.txt'
-                // Use || true to ensure the pipeline doesn't stop before the post block
-                sh 'pytest --junitxml=results.xml || true' 
+                // We use 'python3 -m' to avoid the Exit Code 127 (Command Not Found)
+                sh 'python3 -m pip install -r requirements.txt'
+                
+                // The '|| true' ensures that even if tests fail, 
+                // Jenkins doesn't crash before reaching the 'post' block.
+                sh 'python3 -m pytest --junitxml=results.xml || true'
             }
         }
     }
@@ -20,9 +23,9 @@ pipeline {
     // Move the post block here, inside the pipeline
     post {
         always {
-            // Jenkins will now look in the workspace for these files
+            // Because we are using 'agent' at the top level, 
+            // this 'post' block now has the 'FilePath' context it needs.
             junit 'results.xml'
-            archiveArtifacts artifacts: 'test-results/**', allowEmptyArchive: true
         }
     }
 }
